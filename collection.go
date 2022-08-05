@@ -37,7 +37,7 @@ func (collection *Collection) GetDocument(name string, allowCreate bool) (DocRef
 	return DocRef{}, nil
 }
 
-func (collection *Collection) GetCollection(name string, allowCreate bool) (Collection, error) {
+func (collection *Collection) GetCollection(name string) (Collection, error) {
 	// File Status on the pathJoin(collection.path, name)
 	// Verify that file is a directory
 	// If dir does not exist, create it if allowCreate is set
