@@ -68,21 +68,58 @@ func (collection *Collection) GetDocument(name string, allowCreate bool) (*DocRe
 	// 	 allowCreate is true -> WriteFile at the above path
 	//   else -> throw error
 	// else wrap file descriptor into DocRef and return
+	path := pathJoin(collection.Path(), name)
 
-	return nil, nil
+	fileDescriptor, err := collection.client.FileStatus(path)
+	if err != nil {
+		return nil, fmt.Errorf("error fetching file descriptor: %w", err)
+	}
+
+	if fileDescriptor.Exists() {
+		return NewDocRef(fileDescriptor, collection.client)
+	}
+
+	if allowCreate {
+		fileDescriptors, err := collection.client.WriteFile([]byte{}, path, nil)
+		if err != nil {
+			return nil, fmt.Errorf("error creating new file: %w", err)
+		}
+
+		return NewDocRef(fileDescriptors[0], collection.client)
+	}
+
+	return nil, fmt.Errorf("error document not found")
 }
 
 func (collection *Collection) GetCollection(name string) (*Collection, error) {
-	// File Status on the pathJoin(collection.path, name)
-	// Verify that file is a directory
-	// If dir does not exist, create it if allowCreate is set
-	// Wrap path into Collection and return
+	// Generate a new path from collection.path
+	// Create a collection for the new path
+	// Check if directory already exists by calling makeDirectory
+	// Return the new collection
+	path := pathJoin(collection.Path(), name)
+	newCollection := &Collection{collection.client, pathSplit(path)}
 
-	return nil, nil
+	// Attempt to make the directory at the specified path
+	if err := collection.client.MakeDirectory(path); err != nil {
+		// If directory already exist, expect a 400 error with a specific message,
+		// This indicated that the collection already exists and need not be created.
+		if err.Error() == "non-ok response [400]: directory exist | directory already exist" {
+			return newCollection, nil
+		}
+
+		return nil, fmt.Errorf("failed to create collection: %w", err)
+	}
+
+	return newCollection, nil
 }
 
 func (collection *Collection) RemoveCollection(name string) error {
 	// Remove with RemoveDirectory() enabled for pathJoin(collection.path, name)
+	path := pathJoin(collection.Path(), name)
+
+	if err := collection.client.RemoveFile(path, 0, moibit.RemoveDirectory()); err != nil {
+		return fmt.Errorf("error removing collection: %w", err)
+	}
 
 	return nil
 }
