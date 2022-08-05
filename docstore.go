@@ -39,17 +39,35 @@ func (docstore *DocStore) ListCollections() ([]Collection, error) {
 	return collections, nil
 }
 
+// GetCollection attempts to retrieve a Collection of the given name from the root of the DocStore.
+// If the collection does not exist, it will be created.
 func (docstore *DocStore) GetCollection(name string) (Collection, error) {
-	// File Status on the pathJoin("/", name)
-	// Verify that file is a directory
-	// If dir does not exist, create it if allowCreate is set
-	// Wrap path into Collection and return
+	// Create Collection object with path to specified collection
+	path := pathJoin(name)
+	collection := Collection{pathSplit(path)}
 
-	return Collection{}, nil
+	// Attempt to make the directory at the specified path
+	if err := docstore.c.MakeDirectory(path); err != nil {
+		// If directory already exist, expect a 400 error with a specific message,
+		// This indicated that the collection already exists and need not be created.
+		if err.Error() == "non-ok response [400]: directory exist | directory already exist" {
+			return collection, nil
+		}
+
+		return Collection{}, fmt.Errorf("failed to create collection: %w", err)
+	}
+
+	return collection, nil
 }
 
-func (docstore *DocStore) RemoveCollection(name string) bool {
-	// Remove with RemoveDirectory() enabled for pathJoin("/", name)
+// RemoveCollection removes a Collection from the DocStore.
+// Calling it is idempotent and is a no-op if the collection does not exist
+func (docstore *DocStore) RemoveCollection(name string) error {
+	// Create path to the collection and attempt to remove it
+	path := pathJoin(name)
+	if err := docstore.c.RemoveFile(path, 0, moibit.RemoveDirectory()); err != nil {
+		return fmt.Errorf("error removing collection: %w", err)
+	}
 
-	return false
+	return nil
 }
