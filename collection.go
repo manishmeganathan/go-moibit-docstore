@@ -3,27 +3,62 @@ package docstore
 import (
 	"fmt"
 	"strings"
+
+	"github.com/manishmeganathan/go-moibit-sdk"
 )
 
 // Collection represents a reference to a collection/directory on MOIBit
 type Collection struct {
-	path []string
+	client *moibit.Client
+	path   []string
 }
 
+// ListDocuments returns a slice of DocRef objects in the Collection.
 func (collection *Collection) ListDocuments() ([]DocRef, error) {
-	// ListFile at collection.Path()
-	// Iterate through the FileDescriptors and create a DocRef for each of them if it is not a directory
-	// Return the slice of created DocRefs
+	// List files inside the collection path
+	files, err := collection.client.ListFiles(collection.Path())
+	if err != nil {
+		return nil, fmt.Errorf("failed to list files in collection: %w", err)
+	}
 
-	return nil, nil
+	// Declare document accumulator and iterate over the files
+	documents := make([]DocRef, 0, len(files))
+	for _, file := range files {
+		// If the file descriptor is a file, create a new DocRef
+		// and append into the accumulator
+		if !file.IsDirectory {
+			doc, err := NewDocRef(file, collection.client)
+			if err != nil {
+				return nil, fmt.Errorf("failed to create docref for '%v': %w", file.Hash, err)
+			}
+
+			documents = append(documents, doc)
+		}
+	}
+
+	// Return the documents
+	return documents, nil
 }
 
+// ListCollections returns a slice of Collection
 func (collection *Collection) ListCollections() ([]Collection, error) {
-	// ListFile at collection.Path()
-	// Iterate through the FileDescriptors and create a Collection for each of them if it is a directory
-	// Return the slice of created Collections
+	// List files inside the collection path
+	files, err := collection.client.ListFiles(collection.Path())
+	if err != nil {
+		return nil, fmt.Errorf("failed to list files in collection: %w", err)
+	}
 
-	return nil, nil
+	// Declare collection accumulator and iterate over files
+	collections := make([]Collection, 0, len(files))
+	for _, file := range files {
+		// If the file descriptor is a directory, split its paths and wrap
+		// into a Collection while appending into the accumulator
+		if file.IsDirectory {
+			collections = append(collections, Collection{collection.client, pathSplit(file.Directory)})
+		}
+	}
+
+	return collections, nil
 }
 
 func (collection *Collection) GetDocument(name string, allowCreate bool) (DocRef, error) {
@@ -57,7 +92,7 @@ func (collection *Collection) Parent() (Collection, error) {
 		return Collection{}, fmt.Errorf("collection has not parent")
 	}
 
-	return Collection{collection.path[:1]}, nil
+	return Collection{collection.client, collection.path[:1]}, nil
 }
 
 func (collection *Collection) Path() string {

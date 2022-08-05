@@ -8,17 +8,18 @@ import (
 
 // DocRef represents a reference to a Document on MOIBit
 type DocRef struct {
-	path []string
-	file moibit.FileDescriptor
+	path   []string
+	client *moibit.Client
+	file   moibit.FileDescriptor
 }
 
-func NewDocRef(file moibit.FileDescriptor) (DocRef, error) {
+func NewDocRef(file moibit.FileDescriptor, client *moibit.Client) (DocRef, error) {
 	// Fail if the file desc is for a directory
 	if file.IsDirectory {
 		return DocRef{}, fmt.Errorf("cannot create DocRef from directory")
 	}
 
-	return DocRef{pathSplit(file.Path), file}, nil
+	return DocRef{pathSplit(pathJoin(file.Directory, file.Path)), client, file}, nil
 }
 
 func (docref *DocRef) Get() (Document, error) {
@@ -48,7 +49,7 @@ func (docref *DocRef) Exists() bool {
 }
 
 func (docref *DocRef) Parent() Collection {
-	return Collection{docref.path[:1]}
+	return Collection{docref.client, docref.path[:1]}
 }
 
 func (docref *DocRef) Path() string {

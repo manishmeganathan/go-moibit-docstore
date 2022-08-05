@@ -9,7 +9,7 @@ import (
 // DocStore represents an interface for working with MOIBit as Document Database.
 // The DocStore treats all directories in the app root "/" as a Collection. Files in the root are ignored.
 type DocStore struct {
-	c *moibit.Client
+	client *moibit.Client
 }
 
 // NewDocStore generates a new DocStore for a given moibit.Client.
@@ -20,7 +20,7 @@ func NewDocStore(client *moibit.Client) (*DocStore, error) {
 // ListCollections returns a slice of Collection objects in the DocStore's root.
 func (docstore *DocStore) ListCollections() ([]Collection, error) {
 	// List files at the root "/"
-	files, err := docstore.c.ListFiles("/")
+	files, err := docstore.client.ListFiles("/")
 	if err != nil {
 		return nil, fmt.Errorf("failed to list files at root: %w", err)
 	}
@@ -31,7 +31,7 @@ func (docstore *DocStore) ListCollections() ([]Collection, error) {
 		// If the file descriptor is a directory, split its paths and wrap
 		// into a Collection while appending into the accumulator
 		if file.IsDirectory {
-			collections = append(collections, Collection{pathSplit(file.Directory)})
+			collections = append(collections, Collection{docstore.client, pathSplit(file.Directory)})
 		}
 	}
 
@@ -44,10 +44,10 @@ func (docstore *DocStore) ListCollections() ([]Collection, error) {
 func (docstore *DocStore) GetCollection(name string) (Collection, error) {
 	// Create Collection object with path to specified collection
 	path := pathJoin(name)
-	collection := Collection{pathSplit(path)}
+	collection := Collection{docstore.client, pathSplit(path)}
 
 	// Attempt to make the directory at the specified path
-	if err := docstore.c.MakeDirectory(path); err != nil {
+	if err := docstore.client.MakeDirectory(path); err != nil {
 		// If directory already exist, expect a 400 error with a specific message,
 		// This indicated that the collection already exists and need not be created.
 		if err.Error() == "non-ok response [400]: directory exist | directory already exist" {
@@ -65,7 +65,7 @@ func (docstore *DocStore) GetCollection(name string) (Collection, error) {
 func (docstore *DocStore) RemoveCollection(name string) error {
 	// Create path to the collection and attempt to remove it
 	path := pathJoin(name)
-	if err := docstore.c.RemoveFile(path, 0, moibit.RemoveDirectory()); err != nil {
+	if err := docstore.client.RemoveFile(path, 0, moibit.RemoveDirectory()); err != nil {
 		return fmt.Errorf("error removing collection: %w", err)
 	}
 
