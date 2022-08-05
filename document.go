@@ -37,7 +37,7 @@ func (doc *Document) SetJSON(data []byte) error {
 	newdoc := make(Document)
 	if len(data) != 0 {
 		// Decoding is skipped if data has no contents
-		if err := json.Unmarshal(data, doc); err != nil {
+		if err := json.Unmarshal(data, &newdoc); err != nil {
 			return err
 		}
 	}
