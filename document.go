@@ -2,57 +2,52 @@ package docstore
 
 import (
 	"encoding/json"
-
-	"github.com/manishmeganathan/go-moibit-sdk"
 )
 
 // Document represents a document on the MOIBit DocStore
-type Document struct {
-	name string
-	data jsonIR
-	desc moibit.FileDescriptor
-}
+type Document map[string]any
 
-// NewDocument returns a new Document for a given document name and some JSON encoded data.
+// NewDocument returns a new Document for some JSON encoded data.
 // Returns an error if the data is not JSON encoded.
-func NewDocument(name string, data []byte) (*Document, error) {
-	// Create a new IR JSON and deserialize the data into it
-	ir := make(jsonIR)
-	if err := ir.Deserialize(data); err != nil {
+func NewDocument(data []byte) (Document, error) {
+	// Create a new Document and set its data
+	doc := make(Document)
+	if err := doc.SetJSON(data); err != nil {
 		return nil, err
 	}
 
-	// Wrap the IR JSON in a Document and return
-	return &Document{name, ir, moibit.FileDescriptor{}}, nil
+	return doc, nil
 }
 
-func (doc *Document) Name() string {
-	return doc.name
+// SetKey sets a key-value pair into the Document
+func (doc Document) SetKey(key string, value any) {
+	doc[key] = value
 }
 
-func (doc *Document) SetKey(key string, value any) {
-	doc.data[key] = value
+// GetKey returns a value for a given key from the Document.
+// Returns nil if key does not exist in the Document
+func (doc Document) GetKey(key string) any {
+	return doc[key]
 }
 
-func (doc *Document) GetKey(key string) any {
-	return doc.data[key]
-}
-
-type jsonIR map[string]any
-
-func (ir *jsonIR) Serialize() ([]byte, error) {
-	return json.Marshal(ir)
-}
-
-func (ir *jsonIR) Deserialize(data []byte) error {
-	object := make(jsonIR)
-
+// SetJSON accepts JSON bytes and overwrites the existing Document data
+func (doc *Document) SetJSON(data []byte) error {
+	// Create a new Document and attempt to deserialize the data into it
+	// The data will not be unmarshalled if it is not JSON encoded
+	newdoc := make(Document)
 	if len(data) != 0 {
-		if err := json.Unmarshal(data, object); err != nil {
+		// Decoding is skipped if data has no contents
+		if err := json.Unmarshal(data, doc); err != nil {
 			return err
 		}
 	}
 
-	*ir = object
+	// Set newdoc to doc
+	*doc = newdoc
 	return nil
+}
+
+// GetJSON returns the JSON Bytes representing the Document data
+func (doc Document) GetJSON() ([]byte, error) {
+	return json.Marshal(doc)
 }
