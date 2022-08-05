@@ -18,7 +18,7 @@ func NewDocStore(client *moibit.Client) (*DocStore, error) {
 }
 
 // ListCollections returns a slice of Collection objects in the DocStore's root.
-func (docstore *DocStore) ListCollections() ([]Collection, error) {
+func (docstore *DocStore) ListCollections() ([]*Collection, error) {
 	// List files at the root "/"
 	files, err := docstore.client.ListFiles("/")
 	if err != nil {
@@ -26,12 +26,12 @@ func (docstore *DocStore) ListCollections() ([]Collection, error) {
 	}
 
 	// Declare collection accumulator and iterate over files
-	collections := make([]Collection, 0, len(files))
+	collections := make([]*Collection, 0, len(files))
 	for _, file := range files {
 		// If the file descriptor is a directory, split its paths and wrap
 		// into a Collection while appending into the accumulator
 		if file.IsDirectory {
-			collections = append(collections, Collection{docstore.client, pathSplit(file.Directory)})
+			collections = append(collections, &Collection{docstore.client, pathSplit(file.Directory)})
 		}
 	}
 
@@ -41,10 +41,10 @@ func (docstore *DocStore) ListCollections() ([]Collection, error) {
 
 // GetCollection attempts to retrieve a Collection of the given name from the root of the DocStore.
 // If the collection does not exist, it will be created.
-func (docstore *DocStore) GetCollection(name string) (Collection, error) {
+func (docstore *DocStore) GetCollection(name string) (*Collection, error) {
 	// Create Collection object with path to specified collection
 	path := pathJoin(name)
-	collection := Collection{docstore.client, pathSplit(path)}
+	collection := &Collection{docstore.client, pathSplit(path)}
 
 	// Attempt to make the directory at the specified path
 	if err := docstore.client.MakeDirectory(path); err != nil {
@@ -54,7 +54,7 @@ func (docstore *DocStore) GetCollection(name string) (Collection, error) {
 			return collection, nil
 		}
 
-		return Collection{}, fmt.Errorf("failed to create collection: %w", err)
+		return nil, fmt.Errorf("failed to create collection: %w", err)
 	}
 
 	return collection, nil

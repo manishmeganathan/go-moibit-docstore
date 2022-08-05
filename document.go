@@ -15,15 +15,15 @@ type Document struct {
 
 // NewDocument returns a new Document for a given document name and some JSON encoded data.
 // Returns an error if the data is not JSON encoded.
-func NewDocument(name string, data []byte) (Document, error) {
+func NewDocument(name string, data []byte) (*Document, error) {
 	// Create a new IR JSON and deserialize the data into it
 	ir := make(jsonIR)
 	if err := ir.Deserialize(data); err != nil {
-		return Document{}, err
+		return nil, err
 	}
 
 	// Wrap the IR JSON in a Document and return
-	return Document{name, ir, moibit.FileDescriptor{}}, nil
+	return &Document{name, ir, moibit.FileDescriptor{}}, nil
 }
 
 func (doc *Document) Name() string {

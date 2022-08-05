@@ -14,7 +14,7 @@ type Collection struct {
 }
 
 // ListDocuments returns a slice of DocRef objects in the Collection.
-func (collection *Collection) ListDocuments() ([]DocRef, error) {
+func (collection *Collection) ListDocuments() ([]*DocRef, error) {
 	// List files inside the collection path
 	files, err := collection.client.ListFiles(collection.Path())
 	if err != nil {
@@ -22,7 +22,7 @@ func (collection *Collection) ListDocuments() ([]DocRef, error) {
 	}
 
 	// Declare document accumulator and iterate over the files
-	documents := make([]DocRef, 0, len(files))
+	documents := make([]*DocRef, 0, len(files))
 	for _, file := range files {
 		// If the file descriptor is a file, create a new DocRef
 		// and append into the accumulator
@@ -41,7 +41,7 @@ func (collection *Collection) ListDocuments() ([]DocRef, error) {
 }
 
 // ListCollections returns a slice of Collection
-func (collection *Collection) ListCollections() ([]Collection, error) {
+func (collection *Collection) ListCollections() ([]*Collection, error) {
 	// List files inside the collection path
 	files, err := collection.client.ListFiles(collection.Path())
 	if err != nil {
@@ -49,19 +49,19 @@ func (collection *Collection) ListCollections() ([]Collection, error) {
 	}
 
 	// Declare collection accumulator and iterate over files
-	collections := make([]Collection, 0, len(files))
+	collections := make([]*Collection, 0, len(files))
 	for _, file := range files {
 		// If the file descriptor is a directory, split its paths and wrap
 		// into a Collection while appending into the accumulator
 		if file.IsDirectory {
-			collections = append(collections, Collection{collection.client, pathSplit(file.Directory)})
+			collections = append(collections, &Collection{collection.client, pathSplit(file.Directory)})
 		}
 	}
 
 	return collections, nil
 }
 
-func (collection *Collection) GetDocument(name string, allowCreate bool) (DocRef, error) {
+func (collection *Collection) GetDocument(name string, allowCreate bool) (*DocRef, error) {
 	// FileStatus on the pathJoin(collection.path, name)
 	// Verify file is not Directory
 	// if file.Exist() == false
@@ -69,16 +69,16 @@ func (collection *Collection) GetDocument(name string, allowCreate bool) (DocRef
 	//   else -> throw error
 	// else wrap file descriptor into DocRef and return
 
-	return DocRef{}, nil
+	return nil, nil
 }
 
-func (collection *Collection) GetCollection(name string) (Collection, error) {
+func (collection *Collection) GetCollection(name string) (*Collection, error) {
 	// File Status on the pathJoin(collection.path, name)
 	// Verify that file is a directory
 	// If dir does not exist, create it if allowCreate is set
 	// Wrap path into Collection and return
 
-	return Collection{}, nil
+	return nil, nil
 }
 
 func (collection *Collection) RemoveCollection(name string) error {
@@ -87,12 +87,12 @@ func (collection *Collection) RemoveCollection(name string) error {
 	return nil
 }
 
-func (collection *Collection) Parent() (Collection, error) {
+func (collection *Collection) Parent() (*Collection, error) {
 	if pathJoin(collection.path...) == "/" {
-		return Collection{}, fmt.Errorf("collection has not parent")
+		return nil, fmt.Errorf("collection has not parent")
 	}
 
-	return Collection{collection.client, collection.path[:1]}, nil
+	return &Collection{collection.client, collection.path[:1]}, nil
 }
 
 func (collection *Collection) Path() string {

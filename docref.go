@@ -13,24 +13,24 @@ type DocRef struct {
 	file   moibit.FileDescriptor
 }
 
-func NewDocRef(file moibit.FileDescriptor, client *moibit.Client) (DocRef, error) {
+func NewDocRef(file moibit.FileDescriptor, client *moibit.Client) (*DocRef, error) {
 	// Fail if the file desc is for a directory
 	if file.IsDirectory {
-		return DocRef{}, fmt.Errorf("cannot create DocRef from directory")
+		return nil, fmt.Errorf("cannot create DocRef from directory")
 	}
 
-	return DocRef{pathSplit(pathJoin(file.Directory, file.Path)), client, file}, nil
+	return &DocRef{pathSplit(pathJoin(file.Directory, file.Path)), client, file}, nil
 }
 
-func (docref *DocRef) Get() (Document, error) {
+func (docref *DocRef) Get() (*Document, error) {
 	// Read file at docref.Path()
 	// Pass Bytes into NewDocument
 	// Return the Document
 
-	return Document{}, nil
+	return nil, nil
 }
 
-func (docref *DocRef) Set(doc Document) error {
+func (docref *DocRef) Set(doc *Document) error {
 	// Serialize doc.data
 	// Write file at docref.Path()
 
@@ -48,8 +48,8 @@ func (docref *DocRef) Exists() bool {
 	//return docref.file.Exists()
 }
 
-func (docref *DocRef) Parent() Collection {
-	return Collection{docref.client, docref.path[:1]}
+func (docref *DocRef) Parent() *Collection {
+	return &Collection{docref.client, docref.path[:1]}
 }
 
 func (docref *DocRef) Path() string {
