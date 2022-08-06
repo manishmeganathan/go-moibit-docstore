@@ -79,7 +79,7 @@ func (collection *Collection) GetDocument(name string, allowCreate bool) (*DocRe
 		}
 
 		// allowCreate is set, so create a blank file at the path
-		file, err := collection.client.WriteFile([]byte{}, path, nil)
+		file, err := collection.client.WriteFile([]byte{}, path)
 		if err != nil {
 			return nil, fmt.Errorf("error creating new file: %w", err)
 		}
