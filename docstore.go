@@ -3,7 +3,7 @@ package docstore
 import (
 	"fmt"
 
-	"github.com/manishmeganathan/go-moibit-sdk"
+	"github.com/manishmeganathan/go-moibit-client"
 )
 
 // DocStore represents an interface for working with MOIBit as Document Database.

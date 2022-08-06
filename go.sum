@@ -1,2 +1,2 @@
-github.com/manishmeganathan/go-moibit-sdk v0.0.0-20220805195302-14024a8bd4e6 h1:dpe5oBU1w1A46IP/0TmxEBn8035/8owct76qSIU9B/Q=
-github.com/manishmeganathan/go-moibit-sdk v0.0.0-20220805195302-14024a8bd4e6/go.mod h1:rPO3uXgoWsY7fzyt6YbUTCNG7m2RqyK3sM5ZC9v4pnE=
+github.com/manishmeganathan/go-moibit-client v0.0.0-20220806013317-f14a91d54f1f h1:ysUflQ61/YnUrOa1h7AbOzaYZpzRdG+jQV7yHJUuM2o=
+github.com/manishmeganathan/go-moibit-client v0.0.0-20220806013317-f14a91d54f1f/go.mod h1:8dyINDp1jUV2hPfr3dMHA2kqYZYBvtJXKQm1xBlkUlc=

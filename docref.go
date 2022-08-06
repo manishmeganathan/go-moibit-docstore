@@ -3,7 +3,7 @@ package docstore
 import (
 	"fmt"
 
-	"github.com/manishmeganathan/go-moibit-sdk"
+	"github.com/manishmeganathan/go-moibit-client"
 )
 
 // DocRef represents a reference to a Document on MOIBit

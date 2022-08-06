@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/manishmeganathan/go-moibit-sdk"
+	"github.com/manishmeganathan/go-moibit-client"
 )
 
 // Collection represents a reference to a collection/directory on MOIBit
