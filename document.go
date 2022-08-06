@@ -2,6 +2,7 @@ package docstore
 
 import (
 	"encoding/json"
+	"fmt"
 )
 
 // Document represents a document on the MOIBit DocStore
@@ -13,7 +14,7 @@ func NewDocument(data []byte) (Document, error) {
 	// Create a new Document and set its data
 	doc := make(Document)
 	if err := doc.SetJSON(data); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to create Document: %w", err)
 	}
 
 	return doc, nil
@@ -38,7 +39,7 @@ func (doc *Document) SetJSON(data []byte) error {
 	if len(data) != 0 {
 		// Decoding is skipped if data has no contents
 		if err := json.Unmarshal(data, &newdoc); err != nil {
-			return err
+			return fmt.Errorf("not JSON data: %w", err)
 		}
 	}
 

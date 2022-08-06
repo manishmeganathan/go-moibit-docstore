@@ -29,13 +29,13 @@ func (docref *DocRef) Get() (Document, error) {
 	// ReadFile at the path of DocRef with version specified by the FileDescriptor
 	data, err := docref.client.ReadFile(docref.Path(), docref.file.Version)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to get document: %w", err)
 	}
 
 	// Create a new Document with the data from the file
 	doc, err := NewDocument(data)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to get document: %w", err)
 	}
 
 	return doc, nil
@@ -46,14 +46,17 @@ func (docref *DocRef) Set(doc Document) error {
 	// Get the JSON Bytes for the Document
 	data, err := doc.GetJSON()
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to set document: %w", err)
 	}
 
 	// WriteFile to path specified in DocRef
-	if _, err = docref.client.WriteFile(data, docref.Path()); err != nil {
-		return err
+	file, err := docref.client.WriteFile(data, docref.Path())
+	if err != nil {
+		return fmt.Errorf("failed to set document: %w", err)
 	}
 
+	// Update DocRef's File Descriptor
+	docref.file = file
 	return nil
 }
 
@@ -61,7 +64,7 @@ func (docref *DocRef) Set(doc Document) error {
 func (docref *DocRef) Remove() error {
 	// RemoveFile at path specified by DocRef with version from the FileDescriptor
 	if err := docref.client.RemoveFile(docref.Path(), docref.file.Version); err != nil {
-		return err
+		return fmt.Errorf("failed to remove document: %w", err)
 	}
 
 	return nil

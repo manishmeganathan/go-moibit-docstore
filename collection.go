@@ -79,13 +79,13 @@ func (collection *Collection) GetDocument(name string, allowCreate bool) (*DocRe
 		}
 
 		// allowCreate is set, so create a blank file at the path
-		files, err := collection.client.WriteFile([]byte{}, path, nil)
+		file, err := collection.client.WriteFile([]byte{}, path, nil)
 		if err != nil {
 			return nil, fmt.Errorf("error creating new file: %w", err)
 		}
 
 		// Create a DocRef for the newly written file and return it
-		return newDocRef(files[0], collection.client)
+		return newDocRef(file, collection.client)
 	}
 
 	// Create a new DocRef for the existing file and return it
